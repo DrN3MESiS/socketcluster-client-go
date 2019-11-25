@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/sacOO7/socketcluster-client-go/scclient"
+	"github.com/daominah/socketcluster-client-go/scclient"
 	"text/scanner"
 	"os"
 	"fmt"

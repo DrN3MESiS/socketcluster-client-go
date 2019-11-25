@@ -3,9 +3,9 @@ package scclient
 import (
 	_ "golang.org/x/net/websocket"
 	_ "time"
-	"github.com/sacOO7/socketcluster-client-go/scclient/models"
-	"github.com/sacOO7/socketcluster-client-go/scclient/utils"
-	"github.com/sacOO7/socketcluster-client-go/scclient/parser"
+	"github.com/daominah/socketcluster-client-go/scclient/models"
+	"github.com/daominah/socketcluster-client-go/scclient/utils"
+	"github.com/daominah/socketcluster-client-go/scclient/parser"
 	"github.com/sacOO7/gowebsocket"
 	"net/http"
 	"github.com/sacOO7/go-logger"
