@@ -85,7 +85,7 @@ func (client *Client) registerCallbacks() {
 		scLogger.Info.Printf("%s", message)
 
 		if message == "#1" {
-			client.socket.SendText("#2");
+			client.socket.SendBinary([]byte("#2"));
 		} else {
 			var messageObject = utils.DeserializeDataFromString(message)
 			data, rid, cid, eventname, error := parser.GetMessageDetails(messageObject)
@@ -144,21 +144,21 @@ func (client *Client) Connect() {
 
 func (client *Client) sendHandshake() {
 	handshake := utils.SerializeDataIntoString(models.GetHandshakeObject(client.authToken, int(client.counter.IncrementAndGet())))
-	client.socket.SendText(handshake);
+	client.socket.SendBinary([]byte(handshake));
 }
 
 func (client *Client) ack(cid int) func(error interface{}, data interface{}) {
 	return func(error interface{}, data interface{}) {
 		ackObject := models.GetReceiveEventObject(data, error, cid);
 		ackData := utils.SerializeDataIntoString(ackObject)
-		client.socket.SendText(ackData);
+		client.socket.SendBinary([]byte(ackData));
 	}
 }
 
 func (client *Client) Emit(eventName string, data interface{}) {
 	emitObject := models.GetEmitEventObject(eventName, data, int(client.counter.IncrementAndGet()))
 	emitData := utils.SerializeDataIntoString(emitObject)
-	client.socket.SendText(emitData);
+	client.socket.SendBinary([]byte(emitData));
 }
 
 func (client *Client) EmitAck(eventName string, data interface{}, ack func(eventName string, error interface{}, data interface{})) {
@@ -166,13 +166,13 @@ func (client *Client) EmitAck(eventName string, data interface{}, ack func(event
 	emitObject := models.GetEmitEventObject(eventName, data, id)
 	emitData := utils.SerializeDataIntoString(emitObject)
 	client.putEmitAck(id, eventName, ack)
-	client.socket.SendText(emitData);
+	client.socket.SendBinary([]byte(emitData));
 }
 
 func (client *Client) Subscribe(channelName string) {
 	subscribeObject := models.GetSubscribeEventObject(channelName, int(client.counter.IncrementAndGet()))
 	subscribeData := utils.SerializeDataIntoString(subscribeObject)
-	client.socket.SendText(subscribeData);
+	client.socket.SendBinary([]byte(subscribeData));
 }
 
 func (client *Client) SubscribeAck(channelName string, ack func(eventName string, error interface{}, data interface{})) {
@@ -180,13 +180,13 @@ func (client *Client) SubscribeAck(channelName string, ack func(eventName string
 	subscribeObject := models.GetSubscribeEventObject(channelName, id)
 	subscribeData := utils.SerializeDataIntoString(subscribeObject)
 	client.putEmitAck(id, channelName, ack)
-	client.socket.SendText(subscribeData);
+	client.socket.SendBinary([]byte(subscribeData));
 }
 
 func (client *Client) Unsubscribe(channelName string) {
 	unsubscribeObject := models.GetUnsubscribeEventObject(channelName, int(client.counter.IncrementAndGet()))
 	unsubscribeData := utils.SerializeDataIntoString(unsubscribeObject)
-	client.socket.SendText(unsubscribeData);
+	client.socket.SendBinary([]byte(unsubscribeData));
 }
 
 func (client *Client) UnsubscribeAck(channelName string, ack func(eventName string, error interface{}, data interface{})) {
@@ -194,13 +194,13 @@ func (client *Client) UnsubscribeAck(channelName string, ack func(eventName stri
 	unsubscribeObject := models.GetUnsubscribeEventObject(channelName, id)
 	unsubscribeData := utils.SerializeDataIntoString(unsubscribeObject)
 	client.putEmitAck(id, channelName, ack)
-	client.socket.SendText(unsubscribeData);
+	client.socket.SendBinary([]byte(unsubscribeData));
 }
 
 func (client *Client) Publish(channelName string, data interface{}) {
 	publishObject := models.GetPublishEventObject(channelName, data, int(client.counter.IncrementAndGet()))
 	publishData := utils.SerializeDataIntoString(publishObject)
-	client.socket.SendText(publishData);
+	client.socket.SendBinary([]byte(publishData));
 }
 
 func (client *Client) PublishAck(channelName string, data interface{}, ack func(eventName string, error interface{}, data interface{})) {
@@ -208,7 +208,7 @@ func (client *Client) PublishAck(channelName string, data interface{}, ack func(
 	publishObject := models.GetPublishEventObject(channelName, data, id)
 	publishData := utils.SerializeDataIntoString(publishObject)
 	client.putEmitAck(id, channelName, ack)
-	client.socket.SendText(publishData);
+	client.socket.SendBinary([]byte(publishData));
 }
 
 func (client *Client) OnChannel(eventName string, ack func(eventName string, data interface{})) {
