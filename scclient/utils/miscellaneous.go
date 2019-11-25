@@ -1,19 +1,27 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/daominah/gomicrokit/log"
 	"github.com/rgamba/evtwebsocket"
-	"github.com/vmihailenco/msgpack"
 )
 
+var IS_MSGPACKER bool
 var marshaller Marshaller
 var unmarshaller Unmarshaller
 
 func init() {
-	marshaller, unmarshaller = Jsoner{}, Jsoner{}
-	//marshaller, unmarshaller = Msgpacker{}, Msgpacker{}
+	_ = log.Debug
+	IS_MSGPACKER = true
+	//IS_MSGPACKER = false
+	if IS_MSGPACKER {
+		marshaller, unmarshaller = Msgpacker{}, Msgpacker{}
+		log.Debug("marshaller Msgpacker")
+	} else {
+		marshaller, unmarshaller = Jsoner{}, Jsoner{}
+		log.Debug("marshaller Jsoner")
+	}
 }
 
 type Marshaller interface {
@@ -22,26 +30,6 @@ type Marshaller interface {
 
 type Unmarshaller interface {
 	Unmarshal(data []byte, v interface{}) error
-}
-
-type Jsoner struct{}
-
-func (m Jsoner) Marshal(v interface{}) ([]byte, error) {
-	return json.Marshal(v)
-}
-
-func (m Jsoner) Unmarshal(data []byte, v interface{}) error {
-	return json.Unmarshal(data, v)
-}
-
-type Msgpacker struct{}
-
-func (m Msgpacker) Marshal(v interface{}) ([]byte, error) {
-	return msgpack.Marshal(v)
-}
-
-func (m Msgpacker) Unmarshal(data []byte, v interface{}) error {
-	return msgpack.Unmarshal(data, v)
 }
 
 func PrintMessage(message string) {
@@ -79,6 +67,7 @@ func SerializeData(data interface{}) []byte {
 
 func SerializeDataIntoString(data interface{}) string {
 	b, _ := marshaller.Marshal(data)
+	log.Debugf("SerializeDataIntoString: %v", b)
 	return string(b)
 }
 

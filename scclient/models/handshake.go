@@ -1,7 +1,7 @@
 package models
 
 type AuthData struct {
-	AuthToken *string `json:"authToken"`
+	AuthToken *string `json:"authToken" msgpack:"authToken"`
 }
 
 type HandShake struct {
