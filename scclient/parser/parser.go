@@ -1,5 +1,13 @@
 package parser
 
+import (
+	"fmt"
+
+	"strconv"
+
+	"github.com/daominah/gomicrokit/log"
+)
+
 func Parse(rid int, cid int, event interface{}) MessageType {
 	if event != nil {
 		if event == "#publish" {
@@ -25,20 +33,28 @@ func Parse(rid int, cid int, event interface{}) MessageType {
 func GetMessageDetails(message interface{}) (data interface{}, rid int, cid int, eventname interface{}, error interface{}) {
 	//Converting given message into map, with keys and values to that we can parse it
 
-	itemsMap := message.(map[string]interface{})
+	itemsMap, ok := message.(map[string]interface{})
+	if !ok {
+		log.Infof("unexpected message type: %T", message)
+		return
+	}
 
-	for itemKey, itemValue := range itemsMap {
-		switch itemKey {
+	for k, v := range itemsMap {
+		switch k {
 		case "data":
-			data = itemValue
+			data = v
 		case "rid":
-			rid = int(itemValue.(float64))
+			rStr := fmt.Sprintf("%v", v)
+			ridInt64, _ := strconv.ParseInt(rStr, 10, 64)
+			rid = int(ridInt64)
 		case "cid":
-			cid = int(itemValue.(float64))
+			rStr := fmt.Sprintf("%v", v)
+			ridInt64, _ := strconv.ParseInt(rStr, 10, 64)
+			cid = int(ridInt64)
 		case "event":
-			eventname = itemValue
+			eventname = v
 		case "error":
-			error = itemValue
+			error = v
 		}
 	}
 

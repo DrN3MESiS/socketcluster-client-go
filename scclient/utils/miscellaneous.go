@@ -10,6 +10,7 @@ var marshaller Marshaller
 var unmarshaller Unmarshaller
 
 func init() {
+	//SetMarshaller(false)
 	SetMarshaller(true)
 }
 
