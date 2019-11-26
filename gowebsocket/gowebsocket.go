@@ -11,7 +11,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	logging "github.com/sacOO7/go-logger"
-	"github.com/daominah/gomicrokit/log"
 )
 
 type Empty struct {

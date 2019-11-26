@@ -8,5 +8,6 @@ require (
 	github.com/rgamba/evtwebsocket v0.0.0-20181029234908-48b8cd9f8616
 	github.com/sacOO7/go-logger v0.0.0-20180719173527-9ac9add5a50d
 	github.com/shamaton/msgpack v1.1.1
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20191125084936-ffdde1057850
 )
