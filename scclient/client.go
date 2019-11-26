@@ -4,11 +4,11 @@ import (
 	"net/http"
 	_ "time"
 
+	"github.com/daominah/socketcluster-client-go/gowebsocket"
 	"github.com/daominah/socketcluster-client-go/scclient/models"
 	"github.com/daominah/socketcluster-client-go/scclient/parser"
 	"github.com/daominah/socketcluster-client-go/scclient/utils"
 	logging "github.com/sacOO7/go-logger"
-	"github.com/daominah/socketcluster-client-go/gowebsocket"
 	_ "golang.org/x/net/websocket"
 )
 
@@ -68,46 +68,53 @@ func (client *Client) SetAuthenticationListener(onSetAuthentication func(client 
 
 func (client *Client) wsOnMessage(message string, socket gowebsocket.Socket) {
 	scLogger.Info.Printf("%s", message)
-	if message == "#1" {
+
+	if message == "#1" { // ping without codec
 		client.socket.SendBinary([]byte("#2"))
-	} else {
-		var messageObject = utils.DeserializeDataFromString(message)
-		//fmt.Printf("messageObject: %#v\n", messageObject)
-		data, rid, cid, eventname, error := parser.GetMessageDetails(messageObject)
-
-		parseresult := parser.Parse(rid, cid, eventname)
-
-		switch parseresult {
-		case parser.ISAUTHENTICATED:
-			isAuthenticated := utils.GetIsAuthenticated(messageObject)
-			if client.onAuthentication != nil {
-				client.onAuthentication(*client, isAuthenticated)
-			}
-		case parser.SETTOKEN:
-			scLogger.Trace.Println("Set token event received")
-			token := utils.GetAuthToken(messageObject)
-			if client.onSetAuthentication != nil {
-				client.onSetAuthentication(*client, token)
-			}
-
-		case parser.REMOVETOKEN:
-			scLogger.Trace.Println("Remove token event received")
-			client.authToken = nil
-		case parser.EVENT:
-			scLogger.Trace.Println("Received data for event :: ", eventname)
-			if client.hasEventAck(eventname.(string)) {
-				client.handleOnAckListener(eventname.(string), data, client.ack(cid))
-			} else {
-				client.handleOnListener(eventname.(string), data)
-			}
-		case parser.ACKRECEIVE:
-			client.handleEmitAck(rid, error, data)
-		case parser.PUBLISH:
-			channel := models.GetChannelObject(data)
-			scLogger.Trace.Println("Publish event received for channel :: ", channel.Channel)
-			client.handleOnListener(channel.Channel, channel.Data)
-		}
+		return
 	}
+
+	var messageObject = utils.DeserializeDataFromString(message)
+	//fmt.Printf("messageObject: %#v\n", messageObject)
+	data, rid, cid, eventname, error := parser.GetMessageDetails(messageObject)
+
+	if data == "#1" {
+		client.socket.SendBinary([]byte("#2"))
+	}
+
+	parseresult := parser.Parse(rid, cid, eventname)
+
+	switch parseresult {
+	case parser.ISAUTHENTICATED:
+		isAuthenticated := utils.GetIsAuthenticated(messageObject)
+		if client.onAuthentication != nil {
+			client.onAuthentication(*client, isAuthenticated)
+		}
+	case parser.SETTOKEN:
+		scLogger.Trace.Println("Set token event received")
+		token := utils.GetAuthToken(messageObject)
+		if client.onSetAuthentication != nil {
+			client.onSetAuthentication(*client, token)
+		}
+
+	case parser.REMOVETOKEN:
+		scLogger.Trace.Println("Remove token event received")
+		client.authToken = nil
+	case parser.EVENT:
+		scLogger.Trace.Println("Received data for event :: ", eventname)
+		if client.hasEventAck(eventname.(string)) {
+			client.handleOnAckListener(eventname.(string), data, client.ack(cid))
+		} else {
+			client.handleOnListener(eventname.(string), data)
+		}
+	case parser.ACKRECEIVE:
+		client.handleEmitAck(rid, error, data)
+	case parser.PUBLISH:
+		channel := models.GetChannelObject(data)
+		scLogger.Trace.Println("Publish event received for channel :: ", channel.Channel)
+		client.handleOnListener(channel.Channel, channel.Data)
+	}
+
 }
 
 func (client *Client) registerCallbacks() {
