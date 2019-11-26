@@ -8,7 +8,7 @@ import (
 	"github.com/daominah/socketcluster-client-go/scclient/parser"
 	"github.com/daominah/socketcluster-client-go/scclient/utils"
 	logging "github.com/sacOO7/go-logger"
-	"github.com/sacOO7/gowebsocket"
+	"github.com/daominah/socketcluster-client-go/gowebsocket"
 	_ "golang.org/x/net/websocket"
 )
 

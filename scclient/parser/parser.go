@@ -35,7 +35,7 @@ func GetMessageDetails(message interface{}) (data interface{}, rid int, cid int,
 
 	itemsMap, ok := message.(map[string]interface{})
 	if !ok {
-		log.Infof("unexpected message type: %T", message)
+		log.Infof("unexpected message type: %T, %v", message, message)
 		return
 	}
 
