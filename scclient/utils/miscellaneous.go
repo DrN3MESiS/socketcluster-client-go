@@ -3,24 +3,21 @@ package utils
 import (
 	"fmt"
 
-	"github.com/daominah/gomicrokit/log"
 	"github.com/rgamba/evtwebsocket"
 )
 
-var IS_MSGPACKER bool
 var marshaller Marshaller
 var unmarshaller Unmarshaller
 
 func init() {
-	_ = log.Debug
-	IS_MSGPACKER = true
-	//IS_MSGPACKER = false
-	if IS_MSGPACKER {
+	SetMarshaller(true)
+}
+
+func SetMarshaller(isCodecMinBin bool) {
+	if isCodecMinBin {
 		marshaller, unmarshaller = Msgpacker{}, Msgpacker{}
-		log.Debug("marshaller Msgpacker")
 	} else {
 		marshaller, unmarshaller = Jsoner{}, Jsoner{}
-		log.Debug("marshaller Jsoner")
 	}
 }
 
@@ -67,7 +64,6 @@ func SerializeData(data interface{}) []byte {
 
 func SerializeDataIntoString(data interface{}) string {
 	b, _ := marshaller.Marshal(data)
-	log.Debugf("SerializeDataIntoString: %v", b)
 	return string(b)
 }
 

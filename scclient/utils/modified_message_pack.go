@@ -32,13 +32,10 @@ type ModifiedMsgR struct {
 
 func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 	_ = log.Debugf
-	bs, _ := json.Marshal(i)
-	log.Debugf("msgpacker Marshal in: %#v %v", i, string(bs))
+	//log.Debugf("msgpacker Marshal in: %#v", i)
 	switch v := i.(type) {
 	case models.HandShake:
 		newV := ModifiedMsgE{E: []interface{}{v.Event, v.Data, v.Cid}}
-		bs, _ := json.Marshal(newV)
-		log.Debugf("newV: %v", string(bs))
 		result, err = msgpack.Encode(newV)
 
 	case models.EmitEvent:
@@ -67,12 +64,11 @@ func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 	default:
 		result, err = msgpack.Encode(v)
 	}
-	log.Debugf("msgpacker Marshal out %v: %v\n",
-		err, string(result), result)
+	//log.Debugf("msgpacker Marshal out %v: %v\n", err, result)
 	return result, err
 }
 
 func (m Msgpacker) Unmarshal(data []byte, i interface{}) error {
-	log.Debugf("msgpacker Unmarshal in: %#v", i)
+	//log.Debugf("msgpacker Unmarshal in: %#v", i)
 	return msgpack.Decode(data, i)
 }
