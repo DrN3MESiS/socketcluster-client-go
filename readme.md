@@ -1,7 +1,7 @@
 # socketcluster-client-go
-
-Add a marshaller compatible with
-[JS sc-codec-min-bin](https://github.com/SocketCluster/sc-codec-min-bin), 
-change all write to websocket_BinaryMessage.
-
-TODO: replace the shitty package `gowebsocket`
+Editted from `sacOO7/socketcluster-client-go`:
+* Add a marshaller compatible with
+[JS sc-codec-min-bin](https://github.com/SocketCluster/sc-codec-min-bin)
+* Fix concurrent io in `scclient/event_listener.go`
+* Rewrite `gowebsocket` to add feature: read write deadline,
+notify when disconnected suddenly 

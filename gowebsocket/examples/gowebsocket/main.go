@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"log"
 	"github.com/daominah/socketcluster-client-go/gowebsocket"
@@ -59,3 +60,4 @@ func main() {
 }
 
 // go run main.go
+*/

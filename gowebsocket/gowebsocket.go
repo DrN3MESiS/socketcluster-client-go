@@ -2,33 +2,24 @@ package gowebsocket
 
 import (
 	"crypto/tls"
-	"errors"
 	"net/http"
 	"net/url"
-	"reflect"
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
-	logging "github.com/sacOO7/go-logger"
+	"github.com/daominah/gomicrokit/websocket"
+	goraws "github.com/gorilla/websocket"
 )
 
-type Empty struct {
-}
-
-var logger = logging.GetLogger(reflect.TypeOf(Empty{}).PkgPath()).SetLevel(logging.OFF)
-
-func (socket Socket) EnableLogging() {
-	logger.SetLevel(logging.TRACE)
-}
-
-func (socket Socket) GetLogger() logging.Logger {
-	return logger
+func init() {
+	websocket.LOG = false
+	websocket.SetWebsocketConfig(
+		20*time.Second, 20*time.Second, 8*time.Second, 65536)
 }
 
 type Socket struct {
-	Conn              *websocket.Conn
-	WebsocketDialer   *websocket.Dialer
+	Conn              *websocket.Connection
+	WebsocketDialer   *goraws.Dialer
 	Url               string
 	ConnectionOptions ConnectionOptions
 	RequestHeader     http.Header
@@ -51,10 +42,6 @@ type ConnectionOptions struct {
 	Subprotocols   []string
 }
 
-// todo Yet to be done
-type ReconnectionOptions struct {
-}
-
 func New(url string) Socket {
 	return Socket{
 		Url:           url,
@@ -63,7 +50,7 @@ func New(url string) Socket {
 			UseCompression: false,
 			UseSSL:         true,
 		},
-		WebsocketDialer: &websocket.Dialer{},
+		WebsocketDialer: &goraws.Dialer{},
 		sendMu:          &sync.Mutex{},
 		receiveMu:       &sync.Mutex{},
 	}
@@ -76,14 +63,27 @@ func (socket *Socket) setConnectionOptions() {
 	socket.WebsocketDialer.Subprotocols = socket.ConnectionOptions.Subprotocols
 }
 
+type onReadHeandler struct{ socket *Socket }
+
+func (h onReadHeandler) Handle(cid websocket.ConnectionId, msgType int, msg []byte) {
+	if msgType == goraws.BinaryMessage {
+		if h.socket.OnBinaryMessage != nil {
+			h.socket.OnBinaryMessage(msg, *h.socket)
+		}
+	} else if msgType == goraws.TextMessage {
+		if h.socket.OnTextMessage != nil {
+			h.socket.OnTextMessage(string(msg), *h.socket)
+		}
+	} else {
+		// pass
+	}
+}
+
 func (socket *Socket) Connect() {
-	var err error
 	socket.setConnectionOptions()
 
-	socket.Conn, _, err = socket.WebsocketDialer.Dial(socket.Url, socket.RequestHeader)
-
+	goraConn, _, err := socket.WebsocketDialer.Dial(socket.Url, socket.RequestHeader)
 	if err != nil {
-		logger.Error.Println("Error while connecting to server ", err)
 		socket.IsConnected = false
 		if socket.OnConnectError != nil {
 			socket.OnConnectError(err, *socket)
@@ -91,108 +91,30 @@ func (socket *Socket) Connect() {
 		return
 	}
 
-	logger.Info.Println("Connected to server")
+	socket.Conn = websocket.NewConnection(goraConn, onReadHeandler{socket: socket})
 
 	if socket.OnConnected != nil {
 		socket.IsConnected = true
 		socket.OnConnected(*socket)
 	}
 
-	defaultPingHandler := socket.Conn.PingHandler()
-	socket.Conn.SetPingHandler(func(appData string) error {
-		logger.Trace.Println("Received PING from server")
-		if socket.OnPingReceived != nil {
-			socket.OnPingReceived(appData, *socket)
-		}
-		return defaultPingHandler(appData)
-	})
-
-	defaultPongHandler := socket.Conn.PongHandler()
-	socket.Conn.SetPongHandler(func(appData string) error {
-		logger.Trace.Println("Received PONG from server")
-		if socket.OnPongReceived != nil {
-			socket.OnPongReceived(appData, *socket)
-		}
-		return defaultPongHandler(appData)
-	})
-
-	defaultCloseHandler := socket.Conn.CloseHandler()
-	socket.Conn.SetCloseHandler(func(code int, text string) error {
-		result := defaultCloseHandler(code, text)
-		logger.Warning.Println("Disconnected from server ", result)
-		if socket.OnDisconnected != nil {
+	if socket.OnDisconnected != nil {
+		go func() {
+			<-socket.Conn.ClosedChan
 			socket.IsConnected = false
-			socket.OnDisconnected(errors.New(text), *socket)
-		}
-		return result
-	})
-
-	go func() {
-		for {
-			socket.receiveMu.Lock()
-			messageType, message, err := socket.Conn.ReadMessage()
-			socket.receiveMu.Unlock()
-			if err != nil {
-				logger.Error.Println("read:", err)
-				return
-			}
-			logger.Info.Println("recv: %s", message)
-
-			switch messageType {
-			case websocket.TextMessage:
-				if socket.OnTextMessage != nil {
-					socket.OnTextMessage(string(message), *socket)
-				}
-			case websocket.BinaryMessage:
-				if socket.OnBinaryMessage != nil {
-					socket.OnBinaryMessage(message, *socket)
-				}
-			}
-		}
-	}()
-
-	go func() {
-		pingPeriod := 8 * time.Second
-		ticker := time.NewTicker(pingPeriod)
-		defer ticker.Stop()
-		for {
-			<-ticker.C
-			socket.send(websocket.PingMessage, nil)
-		}
-	}()
+			socket.OnDisconnected(err, *socket)
+		}()
+	}
 }
 
 func (socket *Socket) SendText(message string) {
-	err := socket.send(websocket.TextMessage, []byte(message))
-	if err != nil {
-		logger.Error.Println("write:", err)
-		return
-	}
+	go socket.Conn.Write(message)
 }
 
-func (socket *Socket) SendBinary(data []byte) {
-	err := socket.send(websocket.BinaryMessage, data)
-	if err != nil {
-		logger.Error.Println("write:", err)
-		return
-	}
-}
-
-func (socket *Socket) send(messageType int, data []byte) error {
-	socket.sendMu.Lock()
-	err := socket.Conn.WriteMessage(messageType, data)
-	socket.sendMu.Unlock()
-	return err
+func (socket *Socket) SendBinary(message []byte) {
+	go socket.Conn.WriteBytes(message)
 }
 
 func (socket *Socket) Close() {
-	err := socket.send(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-	if err != nil {
-		logger.Error.Println("write close:", err)
-	}
 	socket.Conn.Close()
-	if socket.OnDisconnected != nil {
-		socket.IsConnected = false
-		socket.OnDisconnected(err, *socket)
-	}
 }

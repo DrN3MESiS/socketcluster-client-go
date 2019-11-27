@@ -3,6 +3,8 @@ github.com/Shopify/sarama v1.24.1/go.mod h1:fGP8eQ6PugKEI0iUETYYtnP6d1pH/bdDMTel
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/daominah/gomicrokit v0.0.2 h1:Ug+psHwwkv9vrrytrpuzVXSBDGsB0edsvjIgsEhUOfw=
 github.com/daominah/gomicrokit v0.0.2/go.mod h1:0jaNjgYez1J9WdFhSiZjpYhSHoqYzfPDmFifLzM8q6E=
+github.com/daominah/gomicrokit v0.1.0 h1:EGcDog31HAlaBi5IkUQ/tRpHJl1oSUBj/8QgbwjA/CQ=
+github.com/daominah/gomicrokit v0.1.0/go.mod h1:0jaNjgYez1J9WdFhSiZjpYhSHoqYzfPDmFifLzM8q6E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
