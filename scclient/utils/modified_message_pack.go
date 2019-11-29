@@ -9,6 +9,16 @@ import (
 	"github.com/shamaton/msgpack"
 )
 
+func msgpackEncode(v interface{}) ([]byte, error) {
+	return msgpack.Encode(v)
+	//return msgpack.Marshal(v)
+}
+
+func msgpackDecode(data []byte, v interface{}) error {
+	return msgpack.Decode(data, v)
+	//return msgpack.Unmarshal(data, v)
+}
+
 type Jsoner struct{}
 
 func (m Jsoner) Marshal(v interface{}) ([]byte, error) {
@@ -37,12 +47,12 @@ func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 	switch v := i.(type) {
 	case models.HandShake:
 		newV := ModifiedMsgE{E: []interface{}{v.Event, v.Data, v.Cid}}
-		result, err = msgpack.Encode(newV)
+		result, err = msgpackEncode(newV)
 
 	case models.EmitEvent:
 		channel, ok := v.Data.(models.Channel)
 		if !ok {
-			result, err = msgpack.Encode(v)
+			result, err = msgpackEncode(v)
 			break
 		}
 		array := []interface{}{channel.Channel, channel.Data}
@@ -56,21 +66,21 @@ func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 		default:
 			newV = ModifiedMsgE{E: array}
 		}
-		result, err = msgpack.Encode(newV)
+		result, err = msgpackEncode(newV)
 
 	case models.ReceiveEvent:
 		newV := ModifiedMsgR{R: []interface{}{v.Rid, v.Error, v.Data}}
-		result, err = msgpack.Encode(newV)
+		result, err = msgpackEncode(newV)
 
 	default:
-		result, err = msgpack.Encode(v)
+		result, err = msgpackEncode(v)
 	}
-	//log.Debugf("msgpacker Marshal out %v: %v\n", err, result)
+	//log.Debugf("msgpacker Marshal out %v: %v, %s \n", err, result, result)
 	return result, err
 }
 
 func (m Msgpacker) Unmarshal(data []byte, i interface{}) error {
-	err := msgpack.Decode(data, i)
+	err := msgpackDecode(data, i)
 	if err != nil {
 		return err
 	}
