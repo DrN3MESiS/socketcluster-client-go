@@ -36,6 +36,7 @@ func (listener *Listener) putEmitAck(id int, eventName string, ack func(eventNam
 func (listener *Listener) handleEmitAck(id int, error interface{}, data interface{}) {
 	listener.mutex.Lock()
 	ackObject := listener.emitAckListener[id]
+	delete(listener.emitAckListener, id)
 	listener.mutex.Unlock()
 	if ackObject != nil {
 		eventName := ackObject[0].(string)

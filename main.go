@@ -7,26 +7,26 @@ import (
 	"fmt"
 )
 
-func onConnect(client scclient.Client) {
+func onConnect(client *scclient.Client) {
 	fmt.Println("Connected to server")
 }
 
-func onDisconnect(client scclient.Client, err error) {
+func onDisconnect(client *scclient.Client, err error) {
 	fmt.Printf("Error: %s\n", err.Error())
 	os.Exit(1)
 }
 
-func onConnectError(client scclient.Client, err error) {
+func onConnectError(client *scclient.Client, err error) {
 	fmt.Printf("Error: %s\n", err.Error())
 	os.Exit(1)
 }
 
-func onSetAuthentication(client scclient.Client, token string) {
+func onSetAuthentication(client *scclient.Client, token string) {
 	fmt.Println("Auth token received :", token)
 
 }
 
-func onAuthentication(client scclient.Client, isAuthenticated bool) {
+func onAuthentication(client *scclient.Client, isAuthenticated bool) {
 	fmt.Println("Client authenticated :", isAuthenticated)
 }
 
@@ -44,6 +44,6 @@ func main() {
 	// os.Exit(0)
 }
 
-func start(client scclient.Client) {
+func start(client *scclient.Client) {
 	// start writing your code from here
 }

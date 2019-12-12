@@ -17,11 +17,11 @@ type Client struct {
 	url                 string
 	counter             utils.AtomicCounter
 	socket              gowebsocket.Socket
-	onConnect           func(client Client)
-	onConnectError      func(client Client, err error)
-	onDisconnect        func(client Client, err error)
-	onSetAuthentication func(client Client, token string)
-	onAuthentication    func(client Client, isAuthenticated bool)
+	onConnect           func(client *Client)
+	onConnectError      func(client *Client, err error)
+	onDisconnect        func(client *Client, err error)
+	onSetAuthentication func(client *Client, token string)
+	onAuthentication    func(client *Client, isAuthenticated bool)
 	ConnectionOptions   gowebsocket.ConnectionOptions
 	RequestHeader       http.Header
 	Listener
@@ -55,13 +55,18 @@ func (client *Client) GetAuthToken() string {
 	return *client.authToken
 }
 
-func (client *Client) SetBasicListener(onConnect func(client Client), onConnectError func(client Client, err error), onDisconnect func(client Client, err error)) {
+func (client *Client) SetBasicListener(
+	onConnect func(client *Client),
+	onConnectError func(client *Client, err error),
+	onDisconnect func(client *Client, err error)) {
 	client.onConnect = onConnect
 	client.onConnectError = onConnectError
 	client.onDisconnect = onDisconnect
 }
 
-func (client *Client) SetAuthenticationListener(onSetAuthentication func(client Client, token string), onAuthentication func(client Client, isAuthenticated bool)) {
+func (client *Client) SetAuthenticationListener(
+	onSetAuthentication func(client *Client, token string),
+	onAuthentication func(client *Client, isAuthenticated bool)) {
 	client.onSetAuthentication = onSetAuthentication
 	client.onAuthentication = onAuthentication
 }
@@ -88,13 +93,13 @@ func (client *Client) wsOnMessage(message string, socket gowebsocket.Socket) {
 	case parser.ISAUTHENTICATED:
 		isAuthenticated := utils.GetIsAuthenticated(messageObject)
 		if client.onAuthentication != nil {
-			client.onAuthentication(*client, isAuthenticated)
+			client.onAuthentication(client, isAuthenticated)
 		}
 	case parser.SETTOKEN:
 		scLogger.Trace.Println("Set token event received")
 		token := utils.GetAuthToken(messageObject)
 		if client.onSetAuthentication != nil {
-			client.onSetAuthentication(*client, token)
+			client.onSetAuthentication(client, token)
 		}
 
 	case parser.REMOVETOKEN:
@@ -123,13 +128,13 @@ func (client *Client) registerCallbacks() {
 		client.counter.Reset()
 		client.sendHandshake()
 		if client.onConnect != nil {
-			client.onConnect(*client)
+			client.onConnect(client)
 		}
 	}
 	client.socket.OnConnectError = func(err error, socket gowebsocket.Socket) {
 		if err != nil {
 			if client.onConnectError != nil {
-				client.onConnectError(*client, err)
+				client.onConnectError(client, err)
 			}
 		}
 	}
@@ -139,7 +144,7 @@ func (client *Client) registerCallbacks() {
 	}
 	client.socket.OnDisconnected = func(err error, socket gowebsocket.Socket) {
 		if client.onDisconnect != nil {
-			client.onDisconnect(*client, err)
+			client.onDisconnect(client, err)
 		}
 		return
 	}
