@@ -135,8 +135,10 @@ func (m Msgpacker) Unmarshal(data []byte, i interface{}) error {
 		if len(array) < 2 {
 			return errors.New("un expected len array <2")
 		}
-		i4["channel"] = array[0]
-		i4["data"] = array[1]
+		if field == "p" {
+			i4["event"] = "#publish"
+		}
+		i4["data"] = map[string]interface{}{"channel": array[0], "data": array[1]}
 		if len(array) == 3 {
 			i4["cid"] = array[2]
 		}
