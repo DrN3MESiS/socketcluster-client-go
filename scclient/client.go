@@ -1,6 +1,7 @@
 package scclient
 
 import (
+	"log"
 	"net/http"
 	_ "time"
 
@@ -80,7 +81,8 @@ func (client *Client) wsOnMessage(message string, socket gowebsocket.Socket) {
 	}
 
 	var messageObject = utils.DeserializeDataFromString(message)
-	//fmt.Printf("messageObject: %#v\n", messageObject)
+	_ = log.Printf
+	//log.Printf("messageObject: %#v\n", messageObject)
 	data, rid, cid, eventname, error := parser.GetMessageDetails(messageObject)
 
 	if data == "#1" {
@@ -198,6 +200,7 @@ func (client *Client) SubscribeAck(channelName string, ack func(eventName string
 	subscribeObject := models.GetSubscribeEventObject(channelName, id)
 	subscribeData := utils.SerializeDataIntoString(subscribeObject)
 	client.putEmitAck(id, channelName, ack)
+	// log.Printf("SubscribeAck: %v, %v, %v\n", id, channelName, ack)
 	client.socket.SendBinary([]byte(subscribeData))
 }
 

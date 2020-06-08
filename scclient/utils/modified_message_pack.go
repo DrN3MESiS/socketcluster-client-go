@@ -55,15 +55,20 @@ func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 			result, err = msgpackEncode(v)
 			break
 		}
-		array := []interface{}{channel.Channel, channel.Data}
-		if v.Cid != 0 {
-			array = append(array, v.Cid)
-		}
 		var newV interface{}
 		switch v.Event {
 		case "#publish":
+			array := []interface{}{channel.Channel, channel.Data}
+			if v.Cid != 0 {
+				array = append(array, v.Cid)
+			}
 			newV = ModifiedMsgP{P: array}
 		default:
+			array := []interface{}{v.Event, channel}
+			if v.Cid != 0 {
+				array = append(array, v.Cid)
+			}
+			log.Println("a", array)
 			newV = ModifiedMsgE{E: array}
 		}
 		result, err = msgpackEncode(newV)

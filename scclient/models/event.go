@@ -1,20 +1,20 @@
 package models
 
 type EmitEvent struct {
-	Event string      `json:"event"`
-	Data  interface{} `json:"data"`
-	Cid   int         `json:"cid"`
+	Event string      `json:"event" msgpack:"data"`
+	Data  interface{} `json:"data" msgpack:"data"`
+	Cid   int         `json:"cid" msgpack:"data"`
 }
 
 type ReceiveEvent struct {
-	Data  interface{} `json:"data"`
-	Error interface{} `json:"error"`
-	Rid   int         `json:"rid"`
+	Data  interface{} `json:"data" msgpack:"data"`
+	Error interface{} `json:"error" msgpack:"error"`
+	Rid   int         `json:"rid" msgpack:"rid" `
 }
 
 type Channel struct {
-	Channel string      `json:"channel"`
-	Data    interface{} `json:"data,omitempty"`
+	Channel string      `json:"channel" msgpack:"channel"`
+	Data    interface{} `json:"data,omitempty" msgpack:"data"`
 }
 
 func GetEmitEventObject(eventname string, data interface{}, messageId int) EmitEvent {
