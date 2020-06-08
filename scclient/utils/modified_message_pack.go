@@ -68,7 +68,7 @@ func (m Msgpacker) Marshal(i interface{}) (result []byte, err error) {
 			if v.Cid != 0 {
 				array = append(array, v.Cid)
 			}
-			log.Println("a", array)
+			//log.Println("a", array)
 			newV = ModifiedMsgE{E: array}
 		}
 		result, err = msgpackEncode(newV)
